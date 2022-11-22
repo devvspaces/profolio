@@ -1,9 +1,9 @@
 from django import forms
-from django.contrib.auth import get_user_model
-from django.contrib.auth import password_validation
-from .validators import validate_phone
-from .models import Profile
+from django.contrib.auth import get_user_model, password_validation
 from django.contrib.gis.geos import fromstr
+
+from .models import Profile
+from .validators import validate_phone
 
 User = get_user_model()
 
@@ -12,6 +12,7 @@ class FormMixin:
     """This is a custom validation method for location.
     Mixin class is used to avoid code duplication.
     """
+
     def clean_location(self):
         """
         Validate location. This is a custom validation method
@@ -67,8 +68,8 @@ class UserRegisterForm(forms.ModelForm, FormMixin):
 
     class Meta:
         model = User
-        fields = ["username", "password", "name",
-                  "phone", "address", "location", "confirm_password"]
+        fields = ["name", "phone", "address", "location",
+                  "username", "password", "confirm_password"]
 
     def clean_password(self):
         """
@@ -84,8 +85,10 @@ class UserRegisterForm(forms.ModelForm, FormMixin):
         """
         ps1 = self.cleaned_data.get("password")
         ps2 = self.cleaned_data.get("confirm_password")
-        if (ps1 and ps2) and (ps1 != ps2):
-            raise forms.ValidationError("Passwords don't match")
+
+        if ps1 != ps2:
+            raise forms.ValidationError("Passwords do not match")
+
         return ps2
 
     def save(self, commit=True):

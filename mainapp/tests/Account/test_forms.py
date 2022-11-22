@@ -57,3 +57,5 @@ class TestUserRegisterForm:
         form_data["confirm_password"] = "123"
         form = UserRegisterForm(data=form_data)
         assert not form.is_valid()
+        assert form.errors["confirm_password"]
+        print(form.errors)

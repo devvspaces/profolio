@@ -1,0 +1,103 @@
+.container-fluid{
+    max-width: 1200px;
+}
+
+.navbar {
+    margin-bottom: 2rem;
+}
+
+#user-location {
+    height: 180px;
+    border-radius: 0.5rem;
+}
+
+#form-map {
+    height: 400px;
+    border-radius: 0.5rem;
+}
+
+#profile-main {
+    max-width: 700px;
+}
+
+#user-location-view{
+    height: 400px;
+    border-radius: 0.5rem;
+}
+
+#map{
+    height: 600px;
+    border-radius: 0.5rem;
+}
+
+.info-box {
+    margin-bottom: 1.5rem;
+}
+.info-box p{
+    margin: 0;
+}
+.info-box p:first-child{
+    font-weight: 500;
+    margin-bottom: .3rem;
+}
+
+
+form legend{
+    font-size: 1.7rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+form input{
+    width: 100% !important;
+}
+
+form button{
+    transition: .3s;
+    margin-top: 1.3rem;
+    border-radius: .5rem;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: .8rem 5rem;
+}
+
+form label{
+    display: block;
+    margin-bottom: .5rem;
+}
+form p.help{
+    font-size: .8rem;
+    display: block;
+    margin-top: .3rem;
+    text-align: left;
+}
+
+form ul{
+    font-size: .8rem;
+    text-align: left;
+}
+
+.form-group{
+    margin-bottom: 1.4rem;
+}
+
+
+#login-form{
+    padding: 3rem 1.5rem;
+    max-width: 500px;
+    text-align: center;
+    margin: 0 auto;
+    margin-top: 3rem;
+}
+#login-form label{
+    text-align: left;
+    margin-bottom: .5rem;
+}
+
+#login-form.register{
+    max-width: 700px;
+}
+
+.errorlist{
+    color: var(--bs-danger);
+}

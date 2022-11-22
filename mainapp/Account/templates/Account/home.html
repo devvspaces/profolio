@@ -4,9 +4,14 @@
 
 <div class="container-fluid">
 
-    <h1>Welcome, {{ user.name }}</h1>
+    <h2>Welcome, {{ user.username }}</h2>
+
+    <h1 class="mt-5 mb-3 text-center">Our Users around the World</h1>
+
+    {{ locations|json_script:"locations-data" }}
 
 </div>
+<div id="map"></div>
     
 {% endblock content %}
     

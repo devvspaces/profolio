@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.gis.admin import OSMGeoAdmin
 from .forms import UserRegisterForm
 
-from .models import AuthActivityLog, Profile, User
+from .models import Profile, User
 
 
 @admin.register(User)
@@ -44,23 +44,6 @@ class ProfileAdmin(OSMGeoAdmin):
     fieldsets = (
         (None, {
             'fields': ('name', 'phone', 'address', 'location')
-        }),
-        ('Advanced options', {
-            'classes': ('collapse',),
-            'fields': ('created',)
-        }),
-    )
-
-
-@admin.register(AuthActivityLog)
-class AuthActivityLogAdmin(admin.ModelAdmin):
-    list_display = ('user', 'action', 'created')
-    search_fields = ('user__username',)
-    list_filter = ('action', 'created')
-    readonly_fields = ('created',)
-    fieldsets = (
-        (None, {
-            'fields': ('user', 'action',)
         }),
         ('Advanced options', {
             'classes': ('collapse',),

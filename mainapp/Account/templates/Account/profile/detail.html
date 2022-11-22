@@ -1,0 +1,50 @@
+{% extends 'Account/base.html' %}
+
+{% block content %}
+
+<div class="container-fluid pb-5">
+
+    <h1 class="mb-5">My Profile</h1>
+
+    <div id="profile-main">
+        <div class="info-box">
+            <p>Name</p>
+            <p>{{ user.name }}</p>
+        </div>
+
+        <div class="info-box">
+            <p>Phone</p>
+            
+            {% if user.profile.phone %}
+                <p>{{ user.profile.phone }}</p>
+            {% else %}
+                <p>No Phone</p>
+            {% endif %}
+                
+        </div>
+
+        <div class="info-box">
+            <p>Address</p>
+            {% if user.profile.address %}
+                <p>{{ user.profile.address }}</p>
+            {% else %}
+                <p>No address</p>
+            {% endif %}
+        </div>
+
+        <div class="info-box">
+            <p>Location</p>
+
+            {% if user.profile.location %}
+                <div id="user-location-view" lat="{{ user.profile.lat }}" lng="{{ user.profile.lng }}"></div>
+            {% else %}
+                <p>No Location</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{% url 'account:profile-update' %}" class="btn btn-md btn-primary mt-4">Update Profile</a>
+
+</div>
+    
+{% endblock content %}

@@ -1,0 +1,40 @@
+{% extends 'Account/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1>Update Profile</h1>
+
+    <form action="" method="post" class="my-5">
+        {% csrf_token %}
+
+        {% for field in form %}
+            {% if field.name != 'location' %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="form-group">
+            {{ form.location.label_tag }}
+            <input type="hidden" name="location" id="locationInput" value="{% if not form.location.errors %}{{ form.location.value }}{% endif %}">
+
+            <div id="form-map" lng="{{ profile.location.x }}" lat="{{ profile.location.y }}"></div>
+
+            {% if form.location.help_text %}
+            <p class="help">{{ field.help_text|safe }}</p>
+            {% endif %}
+
+            {{ form.location.errors }}
+        </div>
+
+        <button>Update</button>
+    </form>
+</div>
+
+{% endblock content %}

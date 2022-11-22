@@ -1,0 +1,47 @@
+{% extends 'Account/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <form action="" method="post" class="register" id="login-form">
+
+        <legend>Create a Profolio account</legend>
+
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        {% for field in form %}
+            {% if field.name != 'location' %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                    {{ field.errors }}
+                </div>
+            {% else %}
+
+                <div class="form-group">
+                    {{ form.location.label_tag }}
+
+                    <input type="hidden" name="location" id="locationInput">
+        
+                    <div id="form-map" value="{% if not form.location.errors %}{{ form.location.value }}{% endif %}"></div>
+        
+                    {% if form.location.help_text %}
+                        <p class="help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+        
+                    {{ form.location.errors }}
+                </div>
+
+            {% endif %}
+        
+        {% endfor %}
+
+        <button>Register</button>
+
+    </form>
+</div>
+{% endblock content %}

@@ -1,9 +1,8 @@
-from django.urls import path
-from django.contrib.auth.views import LoginView, LogoutView
 
-from .views import (
-    HomeView, ProfileView, ProfileUpdateView, RegisterView
-)
+from django.urls import path
+
+from .views import (HomeView, ProfileUpdateView, ProfileView, RegisterView,
+                    UserLoginView, UserLogoutView)
 
 app_name = "account"
 
@@ -11,10 +10,8 @@ urlpatterns = [
     path("", HomeView.as_view(), name="home"),
 
     path("register/", RegisterView.as_view(), name="register"),
-    path("login/", LoginView.as_view(
-        template_name="Account/login.html"
-    ), name="login"),
-    path("logout/", LogoutView.as_view(), name="logout"),
+    path("login/", UserLoginView.as_view(), name="login"),
+    path("logout/", UserLogoutView.as_view(), name="logout"),
 
     path("profile/", ProfileView.as_view(), name="profile"),
     path(

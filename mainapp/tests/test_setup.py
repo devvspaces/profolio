@@ -13,7 +13,6 @@ def test_create_strong_secret_key():
 @pytest.mark.usefixtures("use_dummy_base_path")
 def test_create_logs(settings):
     create_logs()
-    print(settings.BASE_DIR)
     assert os.path.exists(settings.BASE_DIR / "logs")
 
 

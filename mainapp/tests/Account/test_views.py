@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 from django.test.client import Client
 from django.contrib.auth import get_user_model
+from django.contrib.admin.models import LogEntry
 
 User = get_user_model()
 
@@ -61,6 +62,21 @@ class TestLoginView:
         assert response.status_code == 302
         assert response.url == reverse("account:home")
 
+    def test_user_log(self, client: Client):
+        user = User.objects.create_user(
+            username="testuser",
+            password="testpassword",
+        )
+        response = client.post(self.url, {
+            "username": "testuser",
+            "password": "testpassword",
+        })
+        assert response.status_code == 302
+        assert response.url == reverse("account:home")
+
+        log = LogEntry.objects.last()
+        assert log.user == user
+
     def test_post_invalid(self, client: Client):
         response = client.post(self.url, {
             "username": "testuser",
@@ -78,6 +94,19 @@ class TestLogoutView:
         response = client.get(self.url)
         assert response.status_code == 302
         assert response.url == reverse("account:login")
+
+    def test_user_log(self, client: Client):
+        user = User.objects.create_user(
+            username="testuser",
+            password="testpassword",
+        )
+        client.login(username="testuser", password="testpassword")
+        response = client.get(self.url)
+        assert response.status_code == 302
+        assert response.url == reverse("account:login")
+
+        log = LogEntry.objects.last()
+        assert log.user == user
 
     def test_post(self, client):
         response = client.post(self.url)
@@ -103,6 +132,26 @@ class TestProfileView:
         response = client.get(self.url)
         assert response.status_code == 200
         assert response.context["profile"].user.username == "testuser"
+
+
+@pytest.mark.django_db
+class TestHomeView:
+    url = reverse("account:home")
+
+    def test_get(self, client):
+        response = client.get(self.url)
+        assert response.status_code == 302
+        assert response.url == reverse("account:login") + "?next=" + self.url
+
+    def test_get_authenticated(self, client):
+        User.objects.create_user(
+            username="testuser",
+            password="testpassword",
+        )
+        client.login(username="testuser", password="testpassword")
+        response = client.get(self.url)
+        assert response.status_code == 200
+        assert response.context["locations"]
 
 
 @pytest.mark.django_db

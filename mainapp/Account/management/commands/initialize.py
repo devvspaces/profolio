@@ -1,9 +1,9 @@
-from django.core.management.base import BaseCommand, CommandError
-
-# Python script to setup projects
 import os
 from secrets import choice
+
 from django.conf import settings
+from django.core.management import call_command
+from django.core.management.base import BaseCommand, CommandError
 
 
 def create_logs():
@@ -28,7 +28,6 @@ def create_env():
         env_file.write(text)
 
 
-
 class Command(BaseCommand):
     help = 'Command to initialize project'
 
@@ -37,12 +36,22 @@ class Command(BaseCommand):
             self.style.SUCCESS(message))
 
     def handle(self, *args, **options):
+        """
+        Initialize the project by
+        creating logs directory and .env file.
+        Run migrate too.
+
+        :raises CommandError: If any error occurs
+        """
         try:
             # 1. Create logs directory
             create_logs()
 
             # 2. Create .env file
             create_env()
+
+            # 3. Call migrate
+            call_command("migrate")
 
             self._write_success("Project initialized successfully")
 

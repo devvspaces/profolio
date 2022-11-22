@@ -1,19 +1,28 @@
-
 {% extends 'Account/base.html' %}
 
 {% block content %}
+<div class="container-fluid">
+    <form action="" method="post" id="login-form">
 
-<form action="" method="post">
+        <legend>Welcome back, Login</legend>
 
-    <legend>Welcome back, Login</legend>
+        {% csrf_token %}
 
-    {% csrf_token %}
+        {{ form.non_field_errors }}
 
-    {{ form.as_p }}
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                    <p class="help">{{ field.help_text|safe }}</p>
+                {% endif %}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
 
-    <button>Login</button>
+        <button>Login</button>
 
-</form>
-    
+    </form>
+</div>
 {% endblock content %}
-    

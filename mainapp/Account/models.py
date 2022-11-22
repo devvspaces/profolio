@@ -80,10 +80,10 @@ class User(AbstractBaseUser):
 
     objects = UserManager()
 
-    def has_perm(self, perm, obj=None):
+    def has_perm(self, perm, obj=None):  # pragma: no cover
         return True
 
-    def has_module_perms(self, app_label):
+    def has_module_perms(self, app_label):  # pragma: no cover
         return True
 
     def __str__(self) -> str:
@@ -130,24 +130,13 @@ class Profile(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    @property
+    def lat(self):
+        return self.location.y
 
-class AuthActivityLog(models.Model):
-
-    ACTION = (
-        ('login', 'login'),
-        ('logout', 'logout'),
-    )
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    action = models.CharField(max_length=10, choices=ACTION)
-    created = models.DateTimeField(auto_now=True)
-
-    def __str__(self) -> str:
-        return self.user.username
-
-    class Meta:
-        verbose_name_plural = "Auth Activity Logs"
-
+    @property
+    def lng(self):
+        return self.location.x
 
 
 @receiver(post_save, sender=User)

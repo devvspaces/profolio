@@ -1,22 +1,17 @@
-<p align="center">
-  <a href="" rel="noopener">
- <img width=200px height=200px src="https://i.imgur.com/6wj0hh6.jpg" alt="Project logo"></a>
-</p>
-
 <h3 align="center">Profolio GIS</h3>
 
 <div align="center">
 
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
-[![GitHub Issues](https://img.shields.io/github/issues/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/pulls)
+[![GitHub Issues](https://img.shields.io/github/issues/devvspaces/profolio.svg)](https://github.com/devvspaces/profolio/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/devvspaces/profolio.svg)](https://github.com/devvspaces/profolio/pulls)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
 
 </div>
 
 ---
 
-<p align="center"> Few lines describing your project.
+<p align="center"> Check users around the world
     <br> 
 </p>
 
@@ -24,91 +19,179 @@
 
 - [About](#about)
 - [Getting Started](#getting_started)
+- [Running the tests](#tests)
 - [Deployment](#deployment)
-- [Usage](#usage)
 - [Built Using](#built_using)
-- [TODO](../TODO.md)
-- [Contributing](../CONTRIBUTING.md)
 - [Authors](#authors)
-- [Acknowledgments](#acknowledgement)
 
-## 🧐 About <a name = "about"></a>
+## 😎 About <a name = "about"></a>
 
-Write about 1-2 paragraphs describing the purpose of your project.
+A profile website, where you can create a new account and add your location. You will be able to see your location, update it and see other users location.
 
-## 🏁 Getting Started <a name = "getting_started"></a>
+Admin account tracks user auth activity. Login and Logout actions are all logged, giving the admin and staff a bird's eye view of the webapp's daily activity.
+
+Location system depends on GeoDjango. 
+
+## ✅ Getting Started <a name = "getting_started"></a>
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
 
 ### Prerequisites
 
-What things you need to install the software and how to install them.
+1. Python3 is required.
 
-```
-Give examples
-```
+    Installing Python 3
 
-### Installing
+    Python 3 can be installed from thier [Official website](https://www.python.org/downloads/). You can also check this [guide](https://realpython.com/installing-python) if you encounter any problem installing Python 3.
 
-A step by step series of examples that tell you how to get a development env running.
+2. Installing GeoDjango Dependencies
 
-Say what the step will be
+    Installing GDAL
 
-```
-Give the example
-```
+    ```bash
+    sudo atp-get install gdal-bin libgdal-dev
+    ```
 
-And repeat
+    Installing Python 3 GDAL bindings
 
-```
-until finished
-```
+    ```bash
+    sudo apt-get install python3-gdal
+    ```
 
-End with an example of getting some data out of the system or using it for a little demo.
+    Installing Binutils and PROJ.4
+
+    ```bash
+    sudo apt-get install binutils libproj-dev
+    ```
+
+    To setup on Windows, follow this [guide](https://docs.djangoproject.com/en/2.1/ref/contrib/gis/install/#windows) and for Mac, follow this [guide](https://docs.djangoproject.com/en/2.1/ref/contrib/gis/install/#macos).
+
+3. Setup a Spatial Database
+
+    You can setup one using docker.
+
+      ```bash
+      docker run --name=postgis -d -e POSTGRES_USER=user001 -e POSTGRES_PASS=123456789 -e POSTGRES_DBNAME=gis -p 5432:5432 kartoza/postgis:9.6-2.4
+      ```
+
+      The above command will create a docker container with a PostGIS enabled database. You can use the following credentials to connect to the database.
+
+      ```env
+      DB_NAME=gis
+      DB_USER=user001
+      DB_PASS=123456789
+      ```
+
+    > NOTE: Ensure you use Django version 3.2 if you will use the docker container above. The docker container uses a PostGIS version that is not compatible with Django 4.0.
+
+    To install docker, follow this [guide](https://docs.docker.com/install/).
+
+### 👷🏽‍♀️ Installing
+
+This steps with tell you how to get a development enviroment running.
+
+1. Clone the repository
+
+    ```bash
+    git clone https://github.com/devvspaces/profolio
+    cd profolio
+    ```
+  
+2. Create a virtual environment
+
+    ```bash
+    python3 -m venv env
+    ```
+
+3. Activate the virtual environment
+
+    ```bash
+    source env/bin/activate
+    ```
+
+4. Install the dependencies
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+5. Initialize the project
+
+    ```bash
+    python manage.py initialize
+    ```
+
+    By running the above command, a log directory will be created in the root directory of the project. This directory will contain all the logs generated by the project.
+
+    Also, an `.env` file will be created in the root directory of the project. This file will contain a new random SECRET_KEY for the project. You can also add your own SECRET_KEY in this file.
+
+    Lastly, the migrations will be run.
+
+6. Create a superuser
+
+    ```bash
+    python manage.py createsuperuser
+    ```
+
+7. Run the project
+
+    ```bash
+    python manage.py runserver
+    ```
+
+    This will start django development server on port 8000. You can access the project on `http://localhost:8000`.
 
 ## 🔧 Running the tests <a name = "tests"></a>
 
-Explain how to run the automated tests for this system.
+Pytest is used for testing. To run the tests, run the following command.
 
-### Break down into end to end tests
+Make sure you are in the root directory of the project.
 
-Explain what these tests test and why
-
+```bash
+pytest
 ```
-Give an example
-```
+
+> root directory is the directory containing `manage.py` file.
 
 ### And coding style tests
 
-Explain what these tests test and why
+Flake8 is used for linting. To run the linter, run the following command.
 
+Make sure you are in the root directory of the project.
+
+```bash
+flake8
 ```
-Give an example
-```
-
-## 🎈 Usage <a name="usage"></a>
-
-Add notes about how to use the system.
 
 ## 🚀 Deployment <a name = "deployment"></a>
 
-Add additional notes about how to deploy this on a live system.
+Project can be easily deployed on a live system. You can use any web server to deploy the project. I recommend using [Nginx](https://www.nginx.com/) as a web server and [Gunicorn](https://gunicorn.org/) as a WSGI server.
+
+Basically you will do the following,
+
+1. Install Nginx and Gunicorn.
+
+2. Clone this project in your server.
+
+3. Follow the instructions in [Getting Started](#getting_started) to setup the project.
+
+4. Create a systemd service file for Gunicorn.
+
+5. Configure Nginx to serve the project.
+
+6. Restart Nginx and Gunicorn.
+
+For a more detailed guide, follow this [guide](https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-18-04).
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 
-- [MongoDB](https://www.mongodb.com/) - Database
-- [Express](https://expressjs.com/) - Server Framework
-- [VueJs](https://vuejs.org/) - Web Framework
-- [NodeJs](https://nodejs.org/en/) - Server Environment
+- [Python](https://www.python.org/) - Server Language
+- [Django](https://www.djangoproject.com/) - Server Framework
+- [GeoDjango](https://docs.djangoproject.com/en/3.2/ref/contrib/gis/) - Location System
+- [PostgreSQL](https://www.postgresql.org/) - Database
+- [Docker](https://www.docker.com/) - Database Container
+- [Bootstrap](https://getbootstrap.com/) - Frontend Framework
 
 ## ✍️ Authors <a name = "authors"></a>
 
-- [@kylelobo](https://github.com/kylelobo) - Idea & Initial work
-
-See also the list of [contributors](https://github.com/kylelobo/The-Documentation-Compendium/contributors) who participated in this project.
-
-## 🎉 Acknowledgements <a name = "acknowledgement"></a>
-
-- Hat tip to anyone whose code was used
-- Inspiration
-- References
+- [@devvspaces](https://github.com/devvspaces) - Built the project

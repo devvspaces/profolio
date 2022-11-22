@@ -1,6 +1,6 @@
 import pytest
 from django.contrib.auth import get_user_model
-from Account.models import AuthActivityLog
+from django.contrib.gis.geos import fromstr
 from model_bakery import baker
 
 
@@ -18,6 +18,10 @@ class TestUserManager:
         assert user.is_active
         assert user.is_staff is False
         assert user.is_admin is False
+
+    def test_password_required(self):
+        with pytest.raises(ValueError):
+            User.objects.create_user("testuser")
 
     def test_create_staff(self):
         user = User.objects.create_staff(
@@ -55,12 +59,14 @@ class TestProfile:
         profile.name = "Test User"
         assert str(profile) == "Test User"
 
-
-@pytest.mark.django_db
-class TestAuthActivityLog:
-    def test_auth_activity_log_str(self):
+    def test_lat(self):
         user = baker.make(User, username="testuser")
-        auth_activity_log = baker.make(
-            AuthActivityLog, user=user
-        )
-        assert str(auth_activity_log) == "testuser"
+        user.profile.location = fromstr("POINT(10.2 12.4)", srid=4326)
+        user.profile.save()
+        assert user.profile.lat == 12.4
+
+    def test_lon(self):
+        user = baker.make(User, username="testuser")
+        user.profile.location = fromstr("POINT(10.2 12.4)", srid=4326)
+        user.profile.save()
+        assert user.profile.lng == 10.2

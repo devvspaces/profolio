@@ -1,10 +1,16 @@
+import json
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
+from django.core.serializers import serialize
 from django.urls import reverse
+from django.utils.text import slugify
 from django.views.generic import (CreateView, DetailView, TemplateView,
                                   UpdateView)
+from utils.logger import LOGIN, LOGOUT, log_user_action
 
 from .forms import ProfileUpdateForm, UserRegisterForm
 from .models import Profile
@@ -27,10 +33,44 @@ class ViewMixin:
 
         context["title"] = self.title
         context["BRAND_NAME"] = settings.BRAND_NAME
+        page_name = slugify(self.title).lower().replace('-', '_')
+        context[page_name] = 'active'
         return context
 
 
-class RegisterView(CreateView, ViewMixin):
+class UserLoginView(ViewMixin, LoginView):
+    """
+    Login view
+    """
+    template_name: str = "Account/login.html"
+    title: str = "Login"
+
+    def form_valid(self, form):
+        """
+        Log user login action
+        """
+        res = super().form_valid(form)
+        log_user_action(self.request, LOGIN)
+        return res
+
+
+class UserLogoutView(LogoutView):
+    """
+    Login view
+    """
+    template_name: str = "Account/login.html"
+    title: str = "Login"
+
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Log user logout action
+        """
+        if request.user.is_authenticated:
+            log_user_action(request, LOGOUT)
+        return super().dispatch(request, *args, **kwargs)
+
+
+class RegisterView(ViewMixin, CreateView):
     model = User
     template_name = "Account/register.html"
     form_class = UserRegisterForm
@@ -51,12 +91,23 @@ class RegisterView(CreateView, ViewMixin):
         return super().form_valid(form)
 
 
-class HomeView(LoginRequiredMixin, TemplateView, ViewMixin):
+class HomeView(ViewMixin, LoginRequiredMixin, TemplateView):
     template_name = "Account/home.html"
     title = "Home"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-class ProfileView(LoginRequiredMixin, DetailView, ViewMixin):
+        # Get users that have location
+        profiles = Profile.objects.exclude(location__isnull=True)
+
+        # Serialize the data to geojson
+        context["locations"] = json.loads(serialize('geojson', profiles))
+
+        return context
+
+
+class ProfileView(ViewMixin, LoginRequiredMixin, DetailView):
     template_name = "Account/profile/detail.html"
     model = Profile
     context_object_name = "profile"
@@ -66,7 +117,7 @@ class ProfileView(LoginRequiredMixin, DetailView, ViewMixin):
         return self.request.user.profile
 
 
-class ProfileUpdateView(LoginRequiredMixin, UpdateView, ViewMixin):
+class ProfileUpdateView(ViewMixin, LoginRequiredMixin, UpdateView):
     template_name = "Account/profile/update.html"
     model = Profile
     form_class = ProfileUpdateForm
