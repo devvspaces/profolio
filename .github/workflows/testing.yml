@@ -10,6 +10,10 @@ jobs:
 
   test_api:
     runs-on: ubuntu-latest
+
+    env:
+      SECRET_KEY: test
+
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8
