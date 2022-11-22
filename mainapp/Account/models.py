@@ -1,65 +1,82 @@
-from typing import TypeVar
+from typing import Type
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from django.db import models
+from django.contrib.gis.db import models
 from utils.logger import err_logger, logger  # noqa
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-
-T = TypeVar('T', bound=AbstractBaseUser)
+from .validators import validate_phone
 
 
 class UserManager(BaseUserManager):
-    def create_base_user(
-        self, is_active=True,
+    def create_user(
+        self, username: str, password: str = None, is_active=True,
         is_staff=False, is_admin=False
-    ) -> T:
-        user: User = self.model()
-        user.active = is_active
-        user.admin = is_admin
-        user.staff = is_staff
-        user.set_unusable_password()
+    ) -> Type["User"]:
+        """Create a user with the given username and password
+
+        :param username: The username of the user
+        :type username: str
+        :param password: The password of the user, defaults to None
+        :type password: str, optional
+        :param is_active: value for user being active, defaults to True
+        :type is_active: bool, optional
+        :param is_staff: value for user being a staff, defaults to False
+        :type is_staff: bool, optional
+        :param is_admin: value for user being an admin, defaults to False
+        :type is_admin: bool, optional
+        :raises ValueError: If password is not provided
+        :return: The created user
+        :rtype: Type["User"]
+        """
+        if not password:
+            raise ValueError("Password is required")
+
+        user: User = self.model(
+            username=username,
+            active=is_active,
+            staff=is_staff,
+            admin=is_admin
+        )
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(
-        self, , password=None, is_active=True,
-        is_staff=False, is_admin=False
-    ) -> T:
-        user = self.create_base_user(, is_active, is_staff, is_admin)
-        if not password:
-            raise ValueError("User must provide a password")
-        user.set_password(password)
-        user.save()
+    def create_staff(self, username: str, password: str):
+        """Create a staff user
+
+        :param password: staff's password, defaults to None
+        :type password: str, optional
+        :return: The created staff user
+        :rtype: Type["User"]
+        """
+        user = self.create_user(username, password=password, is_staff=True)
         return user
 
-    def create_staff(self, , password=None) -> T:
-        user = self.create_user(=, password=password, is_staff=True)
-        return user
+    def create_superuser(self, username: str, password: str):
+        """Create a superuser
 
-    def create_superuser(self, , password=None) -> T:
+        :param password: admin's password, defaults to None
+        :type password: str, optional
+        :return: The created superuser
+        :rtype: Type["User"]
+        """
         user = self.create_user(
-            =, password=password, is_staff=True, is_admin=True)
+            username, password=password, is_staff=True, is_admin=True
+        )
         return user
-
-    def get_staffs(self):
-        return self.filter(staff=True)
-
-    def get_admins(self):
-        return self.filter(admin=True)
 
 
 class User(AbstractBaseUser):
-    username = models.CharField(max_length=30, unique=True)
-    phone = models.CharField(max_length=14, blank=True)
-    home_address = models.CharField(max_length=255, blank=True)
+    username = models.CharField(max_length=255, unique=True)
 
-    # Admin fields
     active = models.BooleanField(default=True)
     staff = models.BooleanField(default=False)
     admin = models.BooleanField(default=False)
-    created = models.DateTimeField(auto_now=True)
 
     REQUIRED_FIELDS = []
-    USERNAME_FIELD = "username"
+    USERNAME_FIELD = 'username'
 
     objects = UserManager()
 
@@ -69,127 +86,71 @@ class User(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 
-    @property
-    def username(self) -> str:
-        return self.profile.username
-
-    @property
-    def get_name(self) -> str:
-        """Return the x part of an  e.g [x]@gmail.com"""
-        return self..split('@')[0]
-
     def __str__(self) -> str:
-        return self.
-
-    def _user(self, subject, message):
-        val = send_(subject=subject, message=message, =self.)
-        return True if val else False
+        return self.name
 
     @property
-    def first_name(self) -> str:
-        return self.profile.first_name
+    def name(self) -> str:
+        """Get the name of the user or the username if name is not set
 
-    @property
-    def last_name(self) -> str:
-        return self.profile.last_name
+        :return: The name of the user
+        :rtype: str
+        """
+        return self.profile.name or self.username
 
     @property
     def is_active(self) -> bool:
+        """Return True if the user is active."""
         return self.active
 
     @property
     def is_staff(self) -> bool:
+        """Return True if the user is staff."""
         return self.staff
 
     @property
     def is_admin(self) -> bool:
+        """Return True if the user is admin."""
         return self.admin
-
-    def save(self, *args, **kwargs) -> None:
-        created = not self.id
-        data = super().save(*args, **kwargs)
-        self.refresh_from_db()
-
-        try:
-            if created:
-                Profile.objects.create(
-                    user=self,
-                    username=get_name_from_(self.get_name))
-        except Exception as e:
-            self.delete()
-            raise e
-
-        return data
 
 
 class Profile(models.Model):
-    ACCOUNT_TYPES = [
-        ('logistics', 'Logistics',),
-        ('transportation', 'Transportation',),
-        ('driver', 'Driver',),
-    ]
-
-    account_type = models.CharField(
-        choices=ACCOUNT_TYPES, max_length=30, blank=True)
-    approved = models.BooleanField(default=False)
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    username = models.CharField(
-        max_length=60, unique=True, validators=[validate_special_char])
     created = models.DateTimeField(auto_now=True)
 
-    first_name = models.CharField(
-        max_length=30, validators=[validate_special_char])
-    last_name = models.CharField(
-        max_length=30, validators=[validate_special_char])
-
-    phone = models.CharField(max_length=20, validators=[validate_phone])
-    image = models.ImageField(
-        upload_to='accounts/profiles', null=True, blank=True)
-
-    address = models.CharField(max_length=200, blank=True)
-    city = models.CharField(max_length=60, blank=True)
-    state = models.CharField(max_length=60, blank=True)
-    zip = models.CharField(max_length=6, blank=True)
-
-    about = models.TextField(max_length=2500, blank=True)
-
-    @property
-    def fullname(self):
-        return f"{self.first_name} {self.last_name}"
+    name = models.CharField(max_length=30, help_text="Enter your full name")
+    phone = models.CharField(
+        max_length=20, validators=[validate_phone],
+        help_text="Your Phone number")
+    address = models.CharField(
+        max_length=200, blank=True, help_text="Your home address")
+    location = models.PointField(
+        null=True, blank=True, help_text="Your home location")
 
     def __str__(self) -> str:
-        return self.get_fullname
-
-    @property
-    def get_fullname(self) -> str:
-        return self.fullname.title()
-
-    def get_user_name_with_id(self) -> str:
-        user_name = self.first_name + self.last_name
-        return f"{user_name}-{self.user.id}"
+        return self.name
 
 
-class NewsletterSubscriber(models.Model):
-     = models.Field()
-    created = models.DateTimeField(auto_now_add=True)
+class AuthActivityLog(models.Model):
 
-    active = models.BooleanField(default=True)
+    ACTION = (
+        ('login', 'login'),
+        ('logout', 'logout'),
+    )
 
-    """This is used to store reason for users
-    unsubscribing from the website  newsletter"""
-    reason = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.
-
-
-class UsedResetToken(models.Model):
-    """
-    Model for used tokens
-    """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    token = models.CharField(max_length=200)
+    action = models.CharField(max_length=10, choices=ACTION)
+    created = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return self.user.profile.fullname
+        return self.user.username
+
+    class Meta:
+        verbose_name_plural = "Auth Activity Logs"
+
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance, name=instance.username)

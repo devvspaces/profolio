@@ -18,6 +18,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # For gis
+    'django.contrib.gis',
+
     # Local apps
     'Account',
 ]
@@ -51,12 +54,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'mainapp.wsgi.application'
+AUTH_USER_MODEL = 'Account.User'
 
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'gis',
+        'USER': 'user001',
+        'PASSWORD': '123456789',
+        'HOST': 'localhost',
+        'PORT': '5432'
     }
 }
 
@@ -131,3 +139,9 @@ LOGGING = {
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = 'account:login'
+LOGIN_REDIRECT_URL = 'account:home'
+LOGOUT_REDIRECT_URL = 'account:login'
+
+BRAND_NAME = 'Profolio GIS'
